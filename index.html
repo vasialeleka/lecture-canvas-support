@@ -13,6 +13,15 @@
   dt { font-weight: 600; margin-top: 18px; }
   dd { margin: 4px 0 0; }
   footer { margin-top: 48px; border-top: 1px solid #8884; padding-top: 16px; }
+  form { margin-top: 14px; }
+  label { display: block; font-weight: 600; margin-top: 16px; }
+  input[type=email], textarea { width: 100%; box-sizing: border-box; font: inherit; margin-top: 6px;
+    padding: 9px 11px; border: 1px solid #8886; border-radius: 9px; background: transparent; color: inherit; }
+  textarea { resize: vertical; }
+  button { font: inherit; font-weight: 600; margin-top: 18px; padding: 10px 22px; border: 0;
+    border-radius: 9px; background: #2f6df6; color: #fff; cursor: pointer; }
+  button[disabled] { opacity: .55; cursor: default; }
+  #formnote { margin-top: 14px; min-height: 1.6em; }
 </style>
 </head>
 <body>
@@ -20,10 +29,59 @@
 <p class="muted">An infinite whiteboard for lecture notes on iPad and iPhone.</p>
 
 <h2>Get in touch</h2>
-<p>Questions, bug reports and feature requests are all welcome:
-<a href="mailto:vasialeleka@ukr.net">vasialeleka@ukr.net</a>.</p>
+<p>Questions, bug reports and feature requests are all welcome. Write below and the message comes
+straight to me — no account, no app needed.</p>
 <p>It helps if you say which device and iOS version you are on, and what you did just before the problem
 appeared. Replies usually come within a few days.</p>
+
+<form id="contact" action="https://api.web3forms.com/submit" method="POST">
+  <input type="hidden" name="access_key" value="4f1b9667-c824-4e18-9d33-a569db8def21">
+  <input type="hidden" name="subject" value="Lecture Canvas — support request">
+  <input type="hidden" name="from_name" value="Lecture Canvas support page">
+  <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
+
+  <label for="email">Your email <span class="muted">— so I can reply</span></label>
+  <input id="email" type="email" name="email" required autocomplete="email" placeholder="you@example.com">
+
+  <label for="message">Message</label>
+  <textarea id="message" name="message" rows="7" required
+    placeholder="What happened, on which device and iOS version?"></textarea>
+
+  <button type="submit">Send</button>
+  <p id="formnote" class="muted" role="status" aria-live="polite"></p>
+</form>
+
+<script>
+// Submit in place, so the page never navigates away. Without JavaScript the plain form post
+// still works and lands on the form service's own confirmation page.
+(function () {
+  var form = document.getElementById('contact');
+  var note = document.getElementById('formnote');
+  var button = form.querySelector('button');
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    button.disabled = true;
+    note.textContent = 'Sending…';
+    fetch(form.action, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(Object.fromEntries(new FormData(form)))
+    }).then(function (response) { return response.json(); })
+      .then(function (result) {
+        if (result.success) {
+          form.reset();
+          note.textContent = 'Thank you — the message is on its way.';
+        } else {
+          note.textContent = 'That did not go through. Please try again in a moment.';
+        }
+      })
+      .catch(function () {
+        note.textContent = 'That did not go through. Please check your connection and try again.';
+      })
+      .then(function () { button.disabled = false; });
+  });
+}());
+</script>
 
 <h2>Common questions</h2>
 <dl>
